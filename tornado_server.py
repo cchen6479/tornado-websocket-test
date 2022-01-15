@@ -6,8 +6,8 @@ import tornado.web
 import tornado.websocket
 import cv2
 import numpy
-from img_to_string import to_b64
-from balls import detect_balls
+from processing.img_to_string import to_b64
+from processing.balls import detect_balls
 
 from tornado.options import define, options, parse_command_line
 
@@ -36,7 +36,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         _, frame = cap.read()
 
-        # enter open cv code here -- detect_balls(frame, message)
+        # enter open cv code here
+        detect_balls(frame, message)
 
         self.write_message(to_b64("frame.jpg"))
 
