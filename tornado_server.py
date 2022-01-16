@@ -8,8 +8,9 @@ import cv2
 import numpy
 from processing.img_to_string import to_b64
 from processing.balls import detect_balls
+from processing.leo import leo_balls
 
-from tornado.options import define, options, parse_command_line
+from tornado.options import define, options
 
 define('port', default=8080, type=int)
 
@@ -21,7 +22,7 @@ class IndexHandler(tornado.web.RequestHandler):
     # GET request to get the base webpage
     # from the Tornado server
     def get(self):
-        self.render('index.html')
+        self.render('./www/index.html')
 
 # This handler handles a websocket connection
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
@@ -32,10 +33,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     # function to respond to a message on the WebSocket
     def on_message(self, message):
-        print('new message {}'.format(message))
-
         _, frame = cap.read()
-
+        
         # enter open cv code here
         detect_balls(frame, message)
 
