@@ -11,37 +11,38 @@
             }
             ws.onclose = function() {
                 console.log("Connection is closed");
+                clearInterval(createInterval);
             }
             ws.onmessage = function(msg) {
                 // document.getElementById("display").innerHTML = msg.data;
                 document.getElementById("frame").src = "data:image/png;base64, " + msg.data;
             }    
+
         } else {
             console.log('Your browser doenst support WebSocket!');
         }
     }
-
     function send() {
         ws.send(document.getElementById("color").value);
     }
-
-    var createInterval = setInterval(send, 40)
     </script>
 </head>
 <body onload="init();">
-    <h2>Try websocket</h2>
-    <!-- <input type="text" id="txt">
-    <input type="button" onclick="send()" value="Send"> -->
+    <div id = "mask" style = "text-align: center; font-family: Comic Sans MS, Comic Sans, cursive">
+        <h2 class = "heading">Select Mask</h2>
+        <select id = "color" style = "border-radius: 7px; font-size: 20px">
+            <option value = "none">none</option>
+            <option value = "red">red</option>
+            <option value = "blue">blue</option>
+        </select>
+        <h3 class = "heading">Response:</h3>
+        <img id = "frame" src = "">
 
-    <select id = "color">
-        <option value = "red">red</option>
-        <option value = "blue">blue</option>
-        <option value = "none">none</option>
-    </select>
+        <a href = "/camera/"><button>Camera</button></a>
+    </div>
 
-    <h3>Response:</h3>
-    <img id = "frame" src = "" position = "relative" left = window.innerWidth>
-
-    <p id="display"></p>
+    <script>
+        var createInterval = setInterval(send, 50)
+    </script>
 </body>
 </html>
