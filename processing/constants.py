@@ -8,14 +8,32 @@ colors = {
         "high_v" : 255 # 255
     },
     "blue" : {
-        "low_h" : 87,     
-        "low_s" : 0,
-        "low_v" : 19,
-        "high_h" : 180,
-        "high_s" : 144,
+        "low_h" : 95,    
+        "low_s" : 53,
+        "low_v" : 44,
+        "high_h" : 119,
+        "high_s" : 103,
         "high_v" : 255
+    },
+    "red1" : {
+        "low_h" : 150, #0
+        "low_s" : 82, # 101
+        "low_v" : 37, # 75
+        "high_h" : 176, # 180
+        "high_s" : 178, # 241
+        "high_v" : 199 # 255
+    },
+    "blue1" : {
+        "low_h" : 85,     
+        "low_s" : 33,
+        "low_v" : 29,
+        "high_h" : 120,
+        "high_s" : 164,
+        "high_v" : 134
     }
 }
 
 width = 640
 height = 480
+camera = 0
+exposure = -3

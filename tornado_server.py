@@ -1,20 +1,20 @@
 # Writing the Tornado server to initiate the client request
 
-from socket import create_connection
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
 import cv2
-import numpy
 from processing.img_to_string import to_b64
 from processing.balls import detect_balls
-from processing.leo import leo_balls
+from processing.constants import camera, exposure
 
 from tornado.options import define, options
 
 define('port', default=8080, type=int)
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(camera)
+cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
+cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
 
 # This handler handles a call to the base of the server \
 # (127.0.0.1:8888/ -> 127.0.0.1:8888/index.html)
@@ -36,7 +36,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         _, frame = cap.read()
         
         # enter open cv code here
-        detect_balls(frame, message)
+        output_image = detect_balls(frame, message)
+        cv2.write("frame.jpg", output_image)
 
         self.write_message(to_b64("frame.jpg"))
 
@@ -44,9 +45,25 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def on_close(self):
         print('connection closed')
 
+class CameraHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("./www/camera.html")
+
+class CameraSocketHandler(tornado.websocket.WebSocketHandler):
+    def open(self, *args):
+        print("camera websocket connection")
+    
+    def on_message(self, message):
+        self.write_message(message)
+
+    def on_close(self):
+        print('connection closed')
+
 app = tornado.web.Application([
     (r'/', IndexHandler),
-    (r'/ws/', WebSocketHandler)
+    (r'/ws/', WebSocketHandler),
+    (r'/camera/', CameraHandler),
+    (r'/camera/ws/', CameraSocketHandler)
 ])
 
 if __name__ == '__main__':

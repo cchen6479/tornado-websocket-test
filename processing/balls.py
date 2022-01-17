@@ -2,6 +2,8 @@ import cv2
 from processing.constants import colors, width, height
 import numpy as np
 
+
+# parameters: image frame and color of mask from websocket message
 def detect_balls(frame, color):
     output_image = frame
     if not(color == "none"):
@@ -26,8 +28,8 @@ def detect_balls(frame, color):
             circles = np.uint16(np.around(circles))
             for i in circles[0,:]:
                 cv2.rectangle(frame, (i[0] - i[2], i[1] - i[2]), (i[0] + i[2], i[1] + i[2]), (0, 255, 0), 2)
-                cv2.putText(frame, f"({i[0] - width/2}, {i[1] - height / 2})", (i[0] - i[2], i[1] - i[2]), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0))
+                cv2.putText(frame, f"({i[0] - width/2}, {-1 * i[1] + height / 2})", (i[0] - i[2], i[1] - i[2]), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0))
 
         output_image = frame
 
-    cv2.imwrite("frame.jpg", output_image)
+    return output_image
