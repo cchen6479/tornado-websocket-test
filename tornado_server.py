@@ -13,7 +13,6 @@ from tornado.options import define, options
 define('port', default=8080, type=int)
 
 cap = cv2.VideoCapture(camera)
-cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
 cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
 
 # This handler handles a call to the base of the server \
@@ -28,42 +27,48 @@ class IndexHandler(tornado.web.RequestHandler):
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     # function to open a new connection to the WebSocket
     def open(self, *args):
-        print('new connection!')
+        print('cargo connection opened')
         # self.write_message('welcome!')
 
     # function to respond to a message on the WebSocket
     def on_message(self, message):
         _, frame = cap.read()
         
-        # enter open cv code here
+        # enter open cargo detection here
         output_image = detect_balls(frame, message)
-        cv2.write("frame.jpg", output_image)
+        cv2.imwrite("frame.jpg", output_image)
 
         self.write_message(to_b64("frame.jpg"))
 
     # function to close a connection on the WebSocket
     def on_close(self):
-        print('connection closed')
+        print('cargo connection closed')
 
-class CameraHandler(tornado.web.RequestHandler):
+class ShadowHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("./www/camera.html")
+        self.render("./www/line.html")
 
-class CameraSocketHandler(tornado.websocket.WebSocketHandler):
+class ShadowSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self, *args):
-        print("camera websocket connection")
+        print("line websocket connection")
     
     def on_message(self, message):
-        self.write_message(message)
+        _, frame = cap.read()
+
+        # enter shadow line code here
+        
+        cv2.imwrite('frame.jpg', frame)
+
+        self.write_message(to_b64('frame.jpg'))
 
     def on_close(self):
-        print('connection closed')
+        print('line connection closed')
 
 app = tornado.web.Application([
     (r'/', IndexHandler),
     (r'/ws/', WebSocketHandler),
-    (r'/camera/', CameraHandler),
-    (r'/camera/ws/', CameraSocketHandler)
+    (r'/line/', ShadowHandler),
+    (r'/line/ws/', ShadowSocketHandler)
 ])
 
 if __name__ == '__main__':

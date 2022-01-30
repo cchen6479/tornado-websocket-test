@@ -8,11 +8,11 @@ colors = {
         "high_v" : 255 # 255
     },
     "blue" : {
-        "low_h" : 95,    
-        "low_s" : 53,
-        "low_v" : 44,
-        "high_h" : 119,
-        "high_s" : 103,
+        "low_h" : 163, #95,    
+        "low_s" : 49, #53,
+        "low_v" : 0, # 44,
+        "high_h" : 245, #119,
+        "high_s" : 229, #103,
         "high_v" : 255
     },
     "red1" : {
@@ -35,5 +35,5 @@ colors = {
 
 width = 640
 height = 480
-camera = 0
+camera = 1
 exposure = -3

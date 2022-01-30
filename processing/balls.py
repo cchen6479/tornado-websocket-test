@@ -21,7 +21,7 @@ def detect_balls(frame, color):
         # prepares for circle detection
         gray_masked_image = cv2.cvtColor(masked_image, cv2.COLOR_BGR2GRAY)
         eroded_masked_image = cv2.erode(gray_masked_image, None, iterations = 2)
-        circles = cv2.HoughCircles(eroded_masked_image, cv2.HOUGH_GRADIENT, 1, 101, param1 = 118, param2 = 18, minRadius=0, maxRadius=0)
+        circles = cv2.HoughCircles(eroded_masked_image, cv2.HOUGH_GRADIENT, 1, 101, param1 = 29, param2 = 23, minRadius=0, maxRadius=0)
 
         # draws bounding boxes and writes coordinates
         if circles is not None:
@@ -30,6 +30,6 @@ def detect_balls(frame, color):
                 cv2.rectangle(frame, (i[0] - i[2], i[1] - i[2]), (i[0] + i[2], i[1] + i[2]), (0, 255, 0), 2)
                 cv2.putText(frame, f"({i[0] - width/2}, {-1 * i[1] + height / 2})", (i[0] - i[2], i[1] - i[2]), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0))
 
-        output_image = frame
+        output_image = masked_image
 
     return output_image
