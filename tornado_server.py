@@ -4,16 +4,22 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 import cv2
-from processing.img_to_string import to_b64
+import base64
 from processing.balls import detect_balls
+from processing.shadowline import detect_line
 from processing.constants import camera, exposure
-
 from tornado.options import define, options
 
 define('port', default=8080, type=int)
 
-cap = cv2.VideoCapture(camera)
+cap = cv2.VideoCapture(camera, cv2.CAP_DSHOW)
 cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
+
+def to_b64(filename):
+    with open(filename, "rb") as img_file:
+        my_string = base64.b64encode(img_file.read())
+
+    return my_string
 
 # This handler handles a call to the base of the server \
 # (127.0.0.1:8888/ -> 127.0.0.1:8888/index.html)
@@ -33,10 +39,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     # function to respond to a message on the WebSocket
     def on_message(self, message):
         _, frame = cap.read()
-        
         # enter open cargo detection here
-        output_image = detect_balls(frame, message)
-        cv2.imwrite("frame.jpg", output_image)
+        # output_image = detect_balls(frame, message)
+        cv2.imwrite("frame.jpg", frame)
 
         self.write_message(to_b64("frame.jpg"))
 
@@ -55,20 +60,41 @@ class ShadowSocketHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         _, frame = cap.read()
 
-        # enter shadow line code here
-        
-        cv2.imwrite('frame.jpg', frame)
+        output_image = detect_line(frame)
+        cv2.imwrite('frame.jpg', output_image)
 
         self.write_message(to_b64('frame.jpg'))
 
     def on_close(self):
         print('line connection closed')
 
+class CameraHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("./www/camera.html")
+
+class CameraSocketHander(tornado.websocket.WebSocketHandler):
+    def open(self, *args):
+        print("camera connection opened")
+
+    def on_message(self, message):
+        print(message)
+        test_cap = cv2.VideoCapture(int(message), cv2.CAP_DSHOW)
+        ret, _ = test_cap.read()
+
+        if ret:
+            self.write_message(f"Camera successfully changed to {message}.")
+            global cap
+            cap = test_cap
+        else:
+            self.write_message(f"Camera source {message} does not exist.")
+
 app = tornado.web.Application([
     (r'/', IndexHandler),
     (r'/ws/', WebSocketHandler),
     (r'/line/', ShadowHandler),
-    (r'/line/ws/', ShadowSocketHandler)
+    (r'/line/ws/', ShadowSocketHandler),
+    (r'/camera/', CameraHandler),
+    (r'/camera/ws/', CameraSocketHander)
 ])
 
 if __name__ == '__main__':

@@ -1,9 +1,8 @@
 import cv2
-import numpy
-from constants import camera
+from processing.constants import camera
 import math
 
-cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(camera, cv2.CAP_DSHOW)
 cap.set(cv2.CAP_PROP_EXPOSURE, -7)
 
 MIN_AREA = 1000
@@ -39,7 +38,6 @@ def sobel_edge(frame):
 def laplace_edge(frame):
     ddepth = cv2.CV_16S
     kernel_size = 3
-    window_name = "Laplace Demo"
 
     src = cv2.GaussianBlur(frame, (3, 3), 0)
 
@@ -85,17 +83,19 @@ def findRect(frame, output):
 
 def get_angle(p1, p2):
     m = (p1[1] - p2[1])/(p1[0] - p2[0])
-    return format(math.atan(m) * -180 / math.pi, '.2f')
-    
+    return format(math.atan(m) * -180 / math.pi, '.2f')    
 
-while True:
-    _,frame = cap.read()
-
+def detect_line(frame):
     masked_frame = maskColor(frame)
 
     findRect(masked_frame, frame)
     
-    cv2.imshow('image', frame)
-    cv2.imshow('masked frame', masked_frame)
-    if cv2.waitKey(1) == ord('q'):
-        break
+    return frame
+
+if __name__ == "__main__":
+    while True:
+        _, frame = cap.read()
+        output = detect_line(frame)
+        cv2.imshow("fraem", output)
+        if cv2.waitKey(1) == ord('q'):
+            break

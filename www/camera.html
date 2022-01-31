@@ -1,0 +1,42 @@
+<html>
+
+    <head>
+
+        <script type = "text/javascript">
+            var wsC = null;
+
+            function init(){
+                if("WebSocket" in window){
+                    wsC = new WebSocket("ws://localhost:8080/camera/ws/")
+
+                    wsC.onopen = function(){
+                        console.log("camera connection opened");
+                    }
+
+                    wsC.onclose = function(){
+                        console.log("camera connection closed");
+                    }
+
+                    wsC.onmessage = function(msg){
+                        document.getElementById("confirm").innerHTML = msg.data;
+                    }
+                }else{
+                    console.log("camera websocket does not exist")
+                }
+            }
+
+            function send(){
+                wsC.send(document.getElementById("source").value);
+            }
+        </script>
+    </head>
+
+    <body onload="init();">
+        <h1>Camera Config</h1>
+        <label for = "source">Indicate the camera to use as an integer:</label>
+        <input type = "number" id = "source" placeholder = "Camera Source"> <br>
+        <p id = "confirm"></p>
+        <button onclick = "send();">Save</button>
+    </body>
+
+</html>
