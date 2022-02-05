@@ -5,9 +5,11 @@ import tornado.web
 import tornado.websocket
 import cv2
 import base64
+
 from processing.balls import detect_balls
 from processing.shadowline import detect_line
 from processing.constants import camera, exposure
+
 from tornado.options import define, options
 
 define('port', default=8080, type=int)
@@ -15,6 +17,7 @@ define('port', default=8080, type=int)
 cap = cv2.VideoCapture(camera, cv2.CAP_DSHOW)
 cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
 
+# converts image file to base64 string
 def to_b64(filename):
     with open(filename, "rb") as img_file:
         my_string = base64.b64encode(img_file.read())
@@ -72,6 +75,7 @@ class CameraHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("./www/camera.html")
 
+# changes camera source
 class CameraSocketHander(tornado.websocket.WebSocketHandler):
     def open(self, *args):
         print("camera connection opened")
@@ -88,13 +92,38 @@ class CameraSocketHander(tornado.websocket.WebSocketHandler):
         else:
             self.write_message(f"Camera source {message} does not exist.")
 
+class InfoHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render('./www/info.html')
+
+class InfoSocketHandler(tornado.websocket.WebSocketHandler):
+    def open(self, *args):
+        print("info open")
+    
+    def on_close(self):
+        print("info close")
+
+    def on_message(self, message):
+        _, frame = cap.read()
+        
+        angles = detect_line(frame, True)
+
+        data = {
+            "ball_angle" : 39,
+            "ball_distance" : 10,
+            "line_angle" : angles
+        }   
+        self.write_message(data)
+
 app = tornado.web.Application([
     (r'/', IndexHandler),
     (r'/ws/', WebSocketHandler),
     (r'/line/', ShadowHandler),
     (r'/line/ws/', ShadowSocketHandler),
     (r'/camera/', CameraHandler),
-    (r'/camera/ws/', CameraSocketHander)
+    (r'/camera/ws/', CameraSocketHander),
+    (r'/info/', InfoHandler),
+    (r'/info/ws/', InfoSocketHandler)
 ])
 
 if __name__ == '__main__':

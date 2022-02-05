@@ -2,9 +2,9 @@ import cv2
 import math
 import numpy as np
 
-from constants import camera
+from processing.constants import camera
 
-cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 cap.set(cv2.CAP_PROP_EXPOSURE, -7)
 
 MIN_AREA = 1000
@@ -51,6 +51,7 @@ def maskColor(frame):
 # draws rectangle and line that transverses through it
 def findRect(frame, output):
     contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    angles = []
     for contour in contours:
         peri = cv2.arcLength(contour, True)
         approx = cv2.approxPolyDP(contour, 0.01 * peri, True)
@@ -64,7 +65,9 @@ def findRect(frame, output):
             cv2.drawContours(output, [box], 0, (0, 255, 0), 2)
             p1, p2 = get_longest_line(box)
             cv2.line(output, p1, p2, (255, 0, 0), 2)
-            cv2.putText(output, f"{str(get_angle(p1, p2))} degrees", (int(x), int(y-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0,255)  )
+            ang = get_angle(p1, p2)
+            angles.append(ang)
+            cv2.putText(output, f"{str(ang)} degrees", (int(x), int(y-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0,255)  )
             
             
             # cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 0))
@@ -78,6 +81,8 @@ def findRect(frame, output):
             # cv2.line(output,p1,p2,(0,0,255),2)
 
             # cv2.putText(output, f"{str(get_angle(p1, p2))} degrees", (int(x), int(y-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255,255)  )
+
+    return angles
 
 def get_longest_line(box):
     midpoints = [get_midpoint(box[i], box[(i + 1) % 4]) for i in range(4)]
@@ -107,12 +112,16 @@ def get_angle(p1, p2):
         m = 0
     return format(math.atan(m) * -180 / math.pi, '.2f')    
 
-def detect_line(frame):
+def detect_line(frame, get_data = False):
     masked_frame = maskColor(frame)
 
-    findRect(masked_frame, frame)
-    
-    return frame
+    angles = findRect(masked_frame, frame)
+
+    if get_data:
+        print(angles)
+        return angles
+    else:
+        return frame
 
 if __name__ == "__main__":
     while True:
